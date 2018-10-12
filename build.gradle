@@ -31,6 +31,10 @@ configurations {
 dependencies {
     compile('org.springframework.boot:spring-boot-starter-web')
     compile('org.springframework.boot:spring-boot-starter-data-redis')
+    compile('redis.clients:jedis:2.9.0')
+    compile('com.alibaba:fastjson:1.2.51')
+    compile('io.protostuff:protostuff-core:1.6.0')
+    compile('io.protostuff:protostuff-runtime:1.6.0')
     providedRuntime('org.springframework.boot:spring-boot-starter-tomcat')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 }

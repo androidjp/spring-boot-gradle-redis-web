@@ -1,6 +1,7 @@
 package com.jp.springbootgradleredisweb.api.services;
 
 import com.jp.springbootgradleredisweb.api.bean.User;
+import com.jp.springbootgradleredisweb.redis.services.RedisService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
