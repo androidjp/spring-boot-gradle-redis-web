@@ -198,7 +198,7 @@
     * 当然，渐进式rehash，就意味着要操作处于rehash中的字典，需要同时访问两个数组结构，如果旧的找不到，就去新数组中找。
 * 大key造成遍历和内存释放卡顿
   * 如何定位大key?可以使用以下命令：
-    > 但是这个命令没法统计出大object序列化后存入redis中的字符串！！！
+    > 但是这个命令无法统计出大object序列化后存入redis中的字符串！！！
     
     ```shell
     redis-cli -h 127.0.0.1 -p 6379 –-bigkeys
@@ -206,3 +206,20 @@
     redis-cli -h 127.0.0.1 -p 6379 –-bigkeys -i 0.1
     ```
     
+# Redis与MySql的集群方案
+1. 方案一（写DB后缓存失效）：
+  * 读数据时，先查Redis，Redis没有，就去查（Redis数据加上expire时间）
+  * 写数据时，先更新MySql，更新成功后，让Redis失效
+    * MySql的写是带锁的。
+    * Redis中的Data在MySql没有update完毕之前，都是存在着旧数据。
+2. 方案二（cache自己维护DB）：
+  * 查询操作时，如果缓存失效或不存在，就更新缓存
+  * 更新数据时：
+    * 如果没有命中缓存，直接更新数据库（不更新cache），然后返回
+    * 如果命中缓存，先更新缓存，再由Cache自己更新DB（同步操作：更新缓存 -->  更新DB）
+    ![](./images/cache_strategy_2.png)
+3. 方案三（write back，只更新cache，再异步更新db）：
+  * 更新时，无论如何最终都会update cache为dirty。
+  * 读取时，如果发现cache是dirty的，那就去同步数据到mysql，最终update为 no dirty。
+    ![](./images/cache_strategy_3.png)
+  

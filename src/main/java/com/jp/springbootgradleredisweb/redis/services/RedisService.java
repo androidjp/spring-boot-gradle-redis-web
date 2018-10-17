@@ -39,11 +39,4 @@ public class RedisService {
     public void set(String key, Object value) {
         this.redisTemplate.opsForValue().setIfAbsent(key, this.redisMemorizeStrategy.getMemorizeBody(value));
     }
-
-    public void setZSet(String setName, Object value, int score) {
-        this.redisTemplate.boundZSetOps(setName).add(value, score);
-    }
-
-    public void getZSet(String setName) {
-    }
 }
