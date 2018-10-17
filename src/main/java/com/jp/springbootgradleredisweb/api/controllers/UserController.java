@@ -31,12 +31,6 @@ public class UserController {
         return new JsonRes("fail: id invalid !", null);
     }
 
-    @GetMapping("/user")
-    public JsonRes getAll() {
-        String[] users = new String[]{"A", "B", "C"};
-        return new JsonRes("success", users);
-    }
-
     @PostMapping("/user")
     public JsonRes save(@RequestBody User user) {
         if (user != null && StringUtils.hasText(user.getName()) && StringUtils.hasText(user.getPassword())) {
@@ -51,5 +45,18 @@ public class UserController {
         return new JsonRes("fail: user invalid !", null);
     }
 
-
+    @PutMapping("/user/id/{id}/incrAge")
+    public JsonRes addAge(@PathVariable("id") String id) {
+        try {
+            if(StringUtils.hasText(id)) {
+                this.userService.incrAge(id);
+                return new JsonRes("success", null);
+            } else {
+                return  new JsonRes("fail: user invalid !", null);
+            }
+        } catch(Exception e) {
+            logger.info("[addAge error]:" + e.getMessage());
+            return new JsonRes("fail:" + e.getMessage(), null);
+        }
+    }
 }
