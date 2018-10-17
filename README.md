@@ -34,6 +34,10 @@
 |Protostuff库序列化存Redis字符串| ~200ms/1.5MB | firstTime:500ms, 45~90ms |
 |Fastjson库序列化存Redis字符串| ~200ms/1.5MB | firstTime:1000ms, 110~300ms |
 
+用 1.5MB/条的仿shipment数据来做测试：
+![](./images/data_analyze_res.png)
+发现，Protosuff序列化的压缩能力最强，而json序列化的压缩能力最弱。
+
 ## Redis持久化
 > 目的：保证Redis的数据不会因故障而丢失
 
