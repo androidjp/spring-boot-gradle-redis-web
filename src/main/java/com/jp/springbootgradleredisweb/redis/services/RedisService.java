@@ -23,7 +23,7 @@ public class RedisService {
 
     private RedisAtomicHandler redisAtomicHandler;
 
-    @Value("serializer.customize")
+    @Value("${serializer.customize}")
     private String isSerializeCustomize;
 
     @PostConstruct

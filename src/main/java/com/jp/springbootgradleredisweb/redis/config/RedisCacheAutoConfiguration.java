@@ -57,14 +57,11 @@ public class RedisCacheAutoConfiguration extends CachingConfigurerSupport {
         jackson2JsonRedisSerializer.setObjectMapper(om);
         RedisTemplate rt = new RedisTemplate();
         rt.setConnectionFactory(jedisConnectionFactory);
-        System.out.println(jedisConnectionFactory.getPoolConfig().getMaxIdle());
-        System.out.println(jedisConnectionFactory.getPoolConfig().getMinIdle());
-        System.out.println(jedisConnectionFactory.getPoolConfig().getMaxTotal());
         RedisSerializer rs = new StringRedisSerializer();
         rt.setKeySerializer(rs);
-        rt.setValueSerializer(jackson2JsonRedisSerializer);
+//        rt.setValueSerializer(jackson2JsonRedisSerializer);
         rt.setHashKeySerializer(rs);
-        rt.setHashValueSerializer(jackson2JsonRedisSerializer);
+//        rt.setHashValueSerializer(jackson2JsonRedisSerializer);
         rt.afterPropertiesSet();
         return rt;
     }
