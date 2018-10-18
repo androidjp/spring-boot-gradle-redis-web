@@ -49,7 +49,8 @@ public class UserController {
     public JsonRes addAge(@PathVariable("id") String id) {
         try {
             if(StringUtils.hasText(id)) {
-                this.userService.incrAge(id);
+//                this.userService.incrAge(id);
+                this.userService.incrAgeSafely(id);
                 return new JsonRes("success", null);
             } else {
                 return  new JsonRes("fail: user invalid !", null);

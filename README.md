@@ -16,7 +16,13 @@
   答：SpringBoot从1.4版本开始，`spring-boot-starter-redis` 就改名了，两者都是依赖以下三个库，没有区别：
   1. `org.springframework.boot.spring-boot-starter`
   2. `org.springframework.data.spring-data-redis`
-  3. `redis.clients.jedis`
+  3. `redis.clients.jedis` （从Spring Boot 2.x 后， 就改为了 `io.lettuce.lettuce-core`）
+
+* `Jedis`与`Lettuce`
+  1. 两者同为Java客户端
+  2. Jedis基于Java，在实现上是直接连接Redis-Server，在多个线程共享一个Jedis实例时，线程不安全。So，如果想在多线程环境下使用Jedis，需要使用线程池，每个线程都使用自己的Jedis实例，当连接数增多时，会消耗较多的物理资源。
+  3. Lettuce 是线程安全的、可伸缩的 Redis客户端，支持同步、异步和响应式模式。在多线程共享同一个connection实例时，不必担心多线程并发问题。基于Netty NIO框架，支持Redis一些高级功能如：Sentinel，集群，流水线，自动重连和Redis数据模型。
+  
 
 * Jedis与JedisTemplate区别
   * Jedis是Redis官方推荐的面向Java的操作Redis的客户端，而RedisTemplate是SpringDataRedis中对JedisApi的高度封装。
