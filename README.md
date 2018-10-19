@@ -234,4 +234,23 @@
   * 更新时，无论如何最终都会update cache为dirty。
   * 读取时，如果发现cache是dirty的，那就去同步数据到mysql，最终update为 no dirty。
     ![](./images/cache_strategy_3.png)
-  
+
+# 缓存命中率相关知识
+* 删除数据的策略：
+  * FIFO（先进先出）
+  * LFU（最不频繁使用）
+  * LRU（最近最少使用）
+* Redis数据淘汰策略：
+  * Redis 3.0 的六种淘汰策略：
+    * 在已经设置了过期时间的数据中：
+      1. 淘汰最近未使用的一些数据，也就是`volatile-lru`策略
+      2. 随机淘汰一些数据，也就是`volatile-random`策略
+      3. 淘汰距离过期时间最近的一些数据，也就是`volatile-ttl`策略
+    * 在全部数据中
+      1. 淘汰最近未使用的一些数据，也就是`allkeys-lru`策略
+      2. 随机淘汰一些数据，也就是`allkeys-random`策略
+      3. 不淘汰数据
+      
+      6、内存使用达到设定的内存上限时，用户试图存储新数据时会直接返回错误，也就是noeviction策略。
+  * Redis 主要采用不可靠的LRU策略，Redis是随机抽样来执行LRU。（Redis 3.0 有改进 LRU算法）
+  * 从Redis 4.0 开始，增加了LFU策略
