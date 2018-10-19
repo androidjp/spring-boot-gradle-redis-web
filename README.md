@@ -28,6 +28,8 @@
   * Jedis是Redis官方推荐的面向Java的操作Redis的客户端，而RedisTemplate是SpringDataRedis中对JedisApi的高度封装。
   * SpringDataRedis相对于Jedis来说可以方便地更换Redis的Java客户端，比Jedis多了自动管理连接池的特性，方便与其他Spring框架进行搭配使用如：SpringCache
 
+* Redis 字符串最大可容纳大小： `512 Mb`
+
 ## 相关库
 * 序列化库protostuff（号称比fastjson还要快，大小75%，速度50%）
   * `io.protostuff:protostuff-core:1.6.0`
