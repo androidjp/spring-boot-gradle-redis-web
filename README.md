@@ -34,6 +34,7 @@
 * 序列化库protostuff（号称比fastjson还要快，大小75%，速度50%）
   * `io.protostuff:protostuff-core:1.6.0`
   * `io.protostuff:protostuff-runtime:1.6.0`
+* `RedisTamplate`默认采用：`JdkSerializationRedisSerializer`作为序列化策略
 
 ## 效率对比
 |Redis input/output方式|写入速度|读取速度|
