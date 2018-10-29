@@ -10,6 +10,13 @@
 * 一次bound key即可各种操作的操作类：
   * BoundKeyOperations, BoundSetXxxx, BoundListXxxx, BoundHashXxxx
 * 默认不开启事务
+* RedisTemplate提供的几种序列化器：
+  * `RedisSerializer`:redis序列化的接口类 
+  * `OxmSerializer`:xml到object的序列化/反序列化 
+  * `StringRedisSerializer`:string字符串的序列化/反序列化 
+  * `JacksonJsonRedisSerializer`:json到object的序列化/反序列化 
+  * `Jackson2JsonRedisSerializer`:json到object的序列化/反序列化 
+  * (默认)`JdkSerializationRedisSerializer`:java对象的序列化/反序列化
 
 ## 知识点
 * `spring-boot-starter-data-redis` 与 `spring-boot-starter-redis` 的区别
@@ -255,3 +262,120 @@
       6、内存使用达到设定的内存上限时，用户试图存储新数据时会直接返回错误，也就是noeviction策略。
   * Redis 主要采用不可靠的LRU策略，Redis是随机抽样来执行LRU。（Redis 3.0 有改进 LRU算法）
   * 从Redis 4.0 开始，增加了LFU策略
+  
+# MySQL与Redis注解方式集成(配合spring cache 和 Mybatis)
+### 相关的库
+```groovy
+dependencies {
+    compile('org.springframework.boot:spring-boot-starter-data-redis')
+    compile('org.springframework.boot:spring-boot-starter-jdbc')
+    compile('org.mybatis.spring.boot:mybatis-spring-boot-starter:1.3.2')
+    compile('redis.clients:jedis:2.9.0')
+    compile('mysql:mysql-connector-java:8.0.11')
+}
+```
+### 集成过程
+1. 首先，在`application.properties`中加上mysql jdbc相关的连接配置
+   ```properties
+    # jdbc config
+    spring.datasource.url = jdbc:mysql://192.168.77.128:3306/test?useUnicode=true&characterEncoding=utf-8&serverTimezone=GMT&useSSL=false
+    spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+    spring.datasource.username=root
+    spring.datasource.password=root
+    spring.datasource.dbcp2.max-idle=10
+    spring.datasource.dbcp2.max-wait-millis=10000
+    spring.datasource.dbcp2.min-idle=5
+    spring.datasource.dbcp2.initial-size=5
+    # mybatis config
+    mybatis.type-aliases-package=com.jp.springbootgradleredisweb.api.bean
+   ```
+2. （可选）然后，在`RedisCacheAutoConfiguration.java`中配置CacheManager
+   ```java
+       /**
+        * 以下是Springboot 1.x 的方式
+        * 使用cache注解，管理redis 缓存
+        * @return
+        */
+   //    @Bean
+   //    public RedisCacheManager cacheManager() {
+   //        RedisCacheManager redisCacheManager = new RedisCacheManager(redisTemplate());
+   //        return redisCacheManager;
+   //    }
+   
+   @Bean
+   public CacheManager cacheManager(RedisConnectionFactory redisConnectionFactory) {
+       RedisCacheConfiguration redisCacheConfiguration = RedisCacheConfiguration.defaultCacheConfig()
+               .entryTtl(Duration.ofHours(1)); // 设置缓存有效期一小时
+       return RedisCacheManager
+               .builder(RedisCacheWriter.nonLockingRedisCacheWriter(redisConnectionFactory))
+               .cacheDefaults(redisCacheConfiguration).build();
+   }
+   ```
+3. 编写`XXXMapper`接口，用于通过Mybatis以注解方式自动实现sql相关CRUD方法(前提是有一个pojo `XXX`类)
+    ```java
+    public interface UserMapper {
+        @Select("SELECT * FROM users")
+        @Results({
+                @Result(property = "id", column = "id"),
+                @Result(property = "name", column = "name"),
+                @Result(property = "age", column = "age")
+        })
+        List<User> getAll();
+    
+        @Select("SELECT * FROM users WHERE id = #{id}")
+        @Results({
+                @Result(property = "id", column = "id"),
+                @Result(property = "name", column = "name"),
+                @Result(property = "age", column = "age")
+        })
+        User get(String id);
+    
+        @Select("SELECT * FROM users WHERE name = #{name}")
+        @Results({
+                @Result(property = "id", column = "id"),
+                @Result(property = "name", column = "name"),
+                @Result(property = "age", column = "age")
+        })
+        User getByName(String name);
+    
+        @Insert("INSERT INTO users(id, name, password, age) values(#{id}, #{name}, #{password}, #{age})")
+        void insert(User user);
+    
+        @Update("UPDATE users SET name=#{name},age=#{age},password=#{password} WHERE id=#{id}")
+        void update(User user);
+    
+        @Delete("DELETE FROM users WHERE id=#{id}")
+        void delete(Long id);
+    }
+    ```
+4. 在`UserServiceImpl`中配合Spring-Cache实现实际的带redis缓存的数据存取接口。
+    ```java
+    @CacheConfig(cacheNames = "user")
+    @Service
+    public class UserServiceImpl implements UserService {
+        @Resource
+        private UserMapper userMapper;
+        
+        // 每次调用此方法，只要DB insert 成功，那么返回值一定会update redis cache
+        @CachePut(key="#user.name")
+        @Override
+        public User saveUser(User user) throws Exception {
+            System.out.println("[saveUser] start....");
+            if(user.getId() == null) {
+                user.setId(UUID.randomUUID().toString());
+                this.userMapper.insert(user);
+            } else {
+                this.userMapper.update(user);
+            }
+            return user;
+        }
+    
+        // 每次调用此方法，先判断cache中是否存在此key，有就直接拿cache的data，否则跑以下方法
+        @Cacheable(key = "#id")
+        @Override
+        public User getUserById(String id) throws Exception {
+            System.out.println("[getUserById] start....");
+            return userMapper.getByName(id);
+        }
+    }
+    ```
