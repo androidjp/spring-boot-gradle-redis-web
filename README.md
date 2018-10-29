@@ -357,7 +357,7 @@ dependencies {
         private UserMapper userMapper;
         
         // 每次调用此方法，只要DB insert 成功，那么返回值一定会update redis cache
-        @CachePut(key="#user.name")
+        @CachePut(key="#user.id", unless="#result == null")
         @Override
         public User saveUser(User user) throws Exception {
             System.out.println("[saveUser] start....");
@@ -371,7 +371,7 @@ dependencies {
         }
     
         // 每次调用此方法，先判断cache中是否存在此key，有就直接拿cache的data，否则跑以下方法
-        @Cacheable(key = "#id")
+        @Cacheable(key = "#id", unless="#result == null")
         @Override
         public User getUserById(String id) throws Exception {
             System.out.println("[getUserById] start....");
