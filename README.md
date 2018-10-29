@@ -263,7 +263,8 @@
   * Redis 主要采用不可靠的LRU策略，Redis是随机抽样来执行LRU。（Redis 3.0 有改进 LRU算法）
   * 从Redis 4.0 开始，增加了LFU策略
   
-# MySQL与Redis注解方式集成(配合spring cache 和 Mybatis)
+# MySQL 8.x与Redis注解方式集成
+> 配合spring cache 和 Mybatis
 ### 相关的库
 ```groovy
 dependencies {
