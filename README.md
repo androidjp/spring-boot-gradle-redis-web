@@ -24,7 +24,7 @@
   1. `org.springframework.boot.spring-boot-starter`
   2. `org.springframework.data.spring-data-redis`
   3. `redis.clients.jedis` （从Spring Boot 2.x 后， 就改为了 `io.lettuce.lettuce-core`）
-
+  4. 查看redis版本：`redis-server -v`
 * `Jedis`与`Lettuce`
   1. 两者同为Java客户端
   2. Jedis基于Java，在实现上是直接连接Redis-Server，在多个线程共享一个Jedis实例时，线程不安全。So，如果想在多线程环境下使用Jedis，需要使用线程池，每个线程都使用自己的Jedis实例，当连接数增多时，会消耗较多的物理资源。
